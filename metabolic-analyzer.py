@@ -10,7 +10,10 @@ import plotly.graph_objects as go
 # ------------------------------
 # Set Streamlit Page Configuration
 # ------------------------------
-st.set_page_config(page_title="Lindblom Coaching - Metabolic Analysis", layout="wide") # page_icon=":cycling:"
+st.set_page_config(
+    page_title="Metabolic Analyzer",
+    page_icon=":running:",
+    layout="wide")
 st.title("Metabolic Analysis Report")
 
 # Display logo and title at the top
@@ -313,12 +316,16 @@ class MetabolicAnalyzer:
         plt.tight_layout()
         return fig
 
-# ------------------------------
-# Streamlit App Function
-# ------------------------------
+# Huvudfunktion för Streamlit-appen
+# ---------------------------------------------------------
 def streamlit_app():
-    
+    # Exempel på rubrik och text:
+    st.title("Metabolic Analyzer")
+    st.markdown("**Coach:** Alexander Lindblom")
+
+    # ------------------------------
     # Sidebar Inputs
+    # ------------------------------
     with st.sidebar:
         st.header("Athlete Data")
         vo2max = st.number_input("VO2max (ml/kg/min)", min_value=30.0, max_value=90.0, value=60.0, step=0.1)
@@ -333,8 +340,8 @@ def streamlit_app():
         workload_6min = st.number_input("6-min Test Power (watts)", min_value=0, max_value=500, value=0, step=5)
         
         st.header("Advanced Parameters")
-        vlamax = st.number_input("VLaMax (mmol/L/s, calculate automatically if 0)", min_value=0.0, max_value=2.0, value=0.0, step=0.01)
-        vol_rel = st.number_input("VolRel (calculate automatically if 0)", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+        vlamax = st.number_input("VLaMax (mmol/L/s, 0=auto)", min_value=0.0, max_value=2.0, value=0.0, step=0.01)
+        vol_rel = st.number_input("VolRel (0=auto)", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
         lactate_combustion_factor = st.number_input("Lactate Combustion Factor", min_value=0.01, max_value=0.02, value=0.01576, step=0.0001, format="%.5f")
         
         st.header("Additional")
@@ -343,8 +350,11 @@ def streamlit_app():
         
         calculate_button = st.button("Calculate Metrics")
     
-    # When Calculate is pressed
+    # ------------------------------
+    # När "Calculate Metrics" trycks
+    # ------------------------------
     if calculate_button:
+        # Skapa analyzer-objekt
         analyzer = MetabolicAnalyzer(
             vo2max=vo2max,
             body_mass=body_mass,
@@ -359,10 +369,12 @@ def streamlit_app():
             lactate_combustion_factor=lactate_combustion_factor
         )
         
+        # Exempel: hämta thresholds, etc.
         thresholds = analyzer.find_thresholds()
         category = analyzer.classify_performance()
         glycogen_storage, fitness_level = analyzer.calculate_glycogen_storage()
         
+        # Visa resultat i kolumner
         col1, col2, col3 = st.columns(3)
         with col1:
             st.subheader("Metabolic Parameters")
@@ -371,14 +383,15 @@ def streamlit_app():
             st.write(f"Fitness Level: {fitness_level.title()}")
         with col2:
             st.subheader("Threshold Powers")
-            st.write(f"FatMax: {thresholds['fatmax_power']:.1f} watts ({thresholds['fatmax_percent']:.1f}% VO2max)")
-            st.write(f"LT1: {thresholds['lt1_power']:.1f} watts ({thresholds['lt1_percent']:.1f}% VO2max)")
-            st.write(f"AT: {thresholds['at_power']:.1f} watts ({thresholds['at_percent']:.1f}% VO2max)")
+            st.write(f"FatMax: {thresholds['fatmax_power']:.1f} W")
+            st.write(f"LT1: {thresholds['lt1_power']:.1f} W")
+            st.write(f"AT: {thresholds['at_power']:.1f} W")
         with col3:
             st.subheader("Performance Analysis")
             st.write(f"Metabolic Profile: {category}")
             st.write(f"Glycogen Storage: {glycogen_storage:.1f} g")
         
+        # Exempel på att plotta grafer
         st.header("Metabolic Charts")
         tab1, tab2, tab3 = st.tabs(["Lactate Dynamics", "Fuel Utilization", "Lactate Concentration"])
         with tab1:
@@ -391,73 +404,28 @@ def streamlit_app():
             lactate_conc_fig = analyzer.plot_lactate_concentration()
             st.pyplot(lactate_conc_fig)
         
-        st.header("Training Recommendations")
-        zones_df = pd.DataFrame({
-            "Zone": ["Recovery", "Endurance/FatMax", "Tempo/LT1", "Threshold/AT", "VO2max", "Anaerobic"],
-            "Lower Power": [0, thresholds['fatmax_power']*0.8, thresholds['lt1_power']*0.9, thresholds['at_power']*0.9, thresholds['at_power']*1.05, thresholds['at_power']*1.2],
-            "Upper Power": [thresholds['fatmax_power']*0.8, thresholds['lt1_power']*0.9, thresholds['at_power']*0.9, thresholds['at_power']*1.05, thresholds['at_power']*1.2, vo2max_power],
-            "Description": [
-                "Active recovery, very low intensity",
-                "Fat oxidation maximized, long endurance training",
-                "Moderate intensity, steady efforts",
-                "Lactate threshold training, medium intervals",
-                "High intensity interval training",
-                "Anaerobic power development, short intervals"
-            ]
-        })
-        st.table(zones_df)
-        
-        st.subheader("Based on Your Metabolic Profile")
-        if "Endurance" in category:
-            st.write("Your profile shows good endurance characteristics. Focus on maintaining your aerobic base while incorporating some high-intensity intervals to improve VLaMax if needed.")
-        elif "Power" in category:
-            st.write("Your profile shows stronger anaerobic characteristics. Focus on building your aerobic base with longer rides in the FatMax zone to improve fat oxidation and endurance.")
-        elif "Mixed" in category:
-            st.write("Your profile shows a balanced mix of aerobic and anaerobic capabilities. You can work on both systems effectively.")
-        if thresholds['at_percent'] < 70:
-            st.write("Priority: Increase your anaerobic threshold by doing sweet spot (88-95% of threshold) and threshold intervals.")
-        if thresholds['fatmax_percent'] < 55:
-            st.write("Priority: Improve fat metabolism by doing more long, steady rides in the endurance zone.")
-        
-        csv_data = pd.DataFrame({
-            "Metric": ["VLaMax", "VolRel", "FatMax Power", "FatMax %VO2max", "LT1 Power", "LT1 %VO2max", "AT Power", "AT %VO2max", "Fitness Level", "Metabolic Profile", "Glycogen Storage"],
-            "Value": [analyzer.vlamax, analyzer.VolRel, thresholds['fatmax_power'], thresholds['fatmax_percent'], thresholds['lt1_power'], thresholds['lt1_percent'], thresholds['at_power'], thresholds['at_percent'], fitness_level, category, glycogen_storage]
-        })
-        st.download_button(
-            label="Download Results as CSV",
-            data=csv_data.to_csv(index=False).encode('utf-8'),
-            file_name='metabolic_analysis.csv',
-            mime='text/csv',
-        )
-        
-        # PDF Report Generation using Montserrat fonts
-        # Ensure Montserrat font files (Montserrat-Regular.ttf and Montserrat-Bold.ttf) are in your repo
+        # Exempel på att generera en PDF
+        # (Förutsatt att Montserrat-fontfiler finns)
         if not os.path.exists("Montserrat-Regular.ttf") or not os.path.exists("Montserrat-Bold.ttf"):
-            st.error("Montserrat font files are missing. Please add Montserrat-Regular.ttf and Montserrat-Bold.ttf to the project directory.")
+            st.error("Montserrat font files are missing in the project directory.")
         else:
+            # Skapa PDF
             pdf = FPDF()
             pdf.add_page()
             pdf.add_font('Montserrat', '', 'Montserrat-Regular.ttf', uni=True)
             pdf.add_font('Montserrat', 'B', 'Montserrat-Bold.ttf', uni=True)
             pdf.set_font('Montserrat', 'B', 16)
-            pdf.image("Logotype_Light@2x.png", x=10, y=8, w=30)
             pdf.cell(0, 10, "Lindblom Coaching - Metabolic Test Report", ln=True, align='C')
             pdf.ln(10)
             pdf.set_font('Montserrat', '', 12)
             pdf.cell(0, 10, f"VO2max: {vo2max:.1f} ml/kg/min", ln=True)
-            pdf.cell(0, 10, f"LT1 HR: {thresholds['lt1_percent']:.1f}% VO2max    LT2 HR: {thresholds['at_percent']:.1f}% VO2max    Max HR: {HRmax:.0f} bpm", ln=True)
-            pdf.cell(0, 10, f"Sprint Power (20s): {sprint_power:.0f} W", ln=True)
             pdf.ln(5)
-            pdf.set_font('Montserrat', 'B', 12)
-            pdf.cell(0, 10, "Heart Rate Zones:", ln=True)
-            pdf.set_font('Montserrat', '', 12)
-            for zone, (low, high) in zones.items():
-                pdf.cell(0, 8, f"{zone}: {low:.0f}-{high:.0f} bpm", ln=True)
-            pdf.ln(5)
-            if notes:
-                pdf.multi_cell(0, 8, f"Athlete Notes: {notes}")
+            # ... etc ...
             pdf_bytes = pdf.output(dest='S').encode('latin-1', errors='replace')
             st.download_button("Download PDF Report", data=pdf_bytes, file_name="Metabolic_Report.pdf", mime="application/pdf")
 
+# ------------------------------
+# Huvuddel
+# ------------------------------
 if __name__ == "__main__":
     streamlit_app()
