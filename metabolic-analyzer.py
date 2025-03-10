@@ -52,7 +52,7 @@ def calculate_vlamax(vo2max, bmi, body_mass, vo2max_power, sprint_power, age):
 
 def calculate_workload(workload_3min, workload_6min, workload):
     if workload_3min > 0 and workload_6min > 0:
-        return (workload_3min + workload_6min) / 3
+        return (workload_3min + workload_6min) / 2
     return workload
 
 def estimate_fitness_level(vo2max, vlamax):
@@ -342,7 +342,7 @@ def streamlit_app():
         st.header("Advanced Parameters")
         vlamax = st.number_input("VLaMax (mmol/L/s, 0=auto)", min_value=0.0, max_value=2.0, value=0.0, step=0.01)
         vol_rel = st.number_input("VolRel (0=auto)", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
-        lactate_combustion_factor = st.number_input("Lactate Combustion Factor", min_value=0.01, max_value=0.02, value=0.01576, step=0.0001, format="%.5f")
+        lactate_combustion_factor = st.number_input("Lactate Combustion Factor", min_value=0.01, max_value=0.025, value=0.01576, step=0.0001, format="%.5f")
         
         st.header("Additional")
         st.caption("Athlete Notes")
