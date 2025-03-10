@@ -312,14 +312,14 @@ class MetabolicAnalyzer:
         plt.tight_layout()
         return fig
 
+st.set_page_config(page_title="Metabolic Analyzer", layout="wide")    
+st.title("Metabolic Analyzer")
+st.markdown("Based on Mader's Metabolic Model")
+
 # ------------------------------
 # Streamlit App Function
 # ------------------------------
 def streamlit_app():
-    st.set_page_config(page_title="Metabolic Analyzer", layout="wide")
-    
-    st.title("Metabolic Analyzer")
-    st.markdown("Based on Mader's Metabolic Model")
     
     # Sidebar Inputs
     with st.sidebar:
