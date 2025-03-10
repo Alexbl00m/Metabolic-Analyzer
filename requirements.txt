@@ -1,5 +1,6 @@
-numpy
-matplotlib.pyplot
-matplotlib.font_manager
 streamlit
+numpy
 pandas
+matplotlib
+plotly
+fpdf
