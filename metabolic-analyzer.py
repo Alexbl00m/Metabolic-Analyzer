@@ -16,6 +16,7 @@ st.title("Metabolic Analysis Report")
 # Display logo and title at the top
 st.image("Logotype_Light@2x.png", width=200)
 st.markdown("**Coach:** Alexander Lindblom")
+st.markdown("Based on Mader's Metabolic Model")
 
 # ------------------------------
 # Define Brand Colors and Matplotlib Font
@@ -311,10 +312,6 @@ class MetabolicAnalyzer:
         ax1.legend(loc='upper left', frameon=True)
         plt.tight_layout()
         return fig
-
-st.set_page_config(page_title="Metabolic Analyzer", layout="wide")    
-st.title("Metabolic Analyzer")
-st.markdown("Based on Mader's Metabolic Model")
 
 # ------------------------------
 # Streamlit App Function
