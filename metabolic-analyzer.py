@@ -10,11 +10,11 @@ import plotly.graph_objects as go
 # ------------------------------
 # Set Streamlit Page Configuration
 # ------------------------------
-st.set_page_config(page_title="Lindblom Coaching - Metabolic Analysis", page_icon=":running:", layout="wide")
+st.set_page_config(page_title="Lindblom Coaching - Metabolic Analysis", layout="wide") # page_icon=":cycling:"
+st.title("Metabolic Analysis Report")
 
 # Display logo and title at the top
 st.image("Logotype_Light@2x.png", width=200)
-st.title("Metabolic Analysis Report")
 st.markdown("**Coach:** Alexander Lindblom")
 
 # ------------------------------
